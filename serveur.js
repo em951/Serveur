@@ -48,13 +48,11 @@ wsServer.on('request', function(request) {
     connection.on('close', function(reasonCode, description) {
         console.log('WebSocket Connection Closed:', reasonCode, description);
     
-        // Check if the player was in a game
         if (isPlayerInGame(connection)) {
-            // End the game
+
             endGame(connection);
         }
     
-        // Send a message to other players informing them that a player has disconnected
         informOtherPlayers(connection);
     });
     
@@ -69,7 +67,7 @@ function isPlayerInGame(connection) {
 }
 
 function endGame(connection) {
-       //TO DO
+    //TO DO
 }
 
 function informOtherPlayers(connection) {
@@ -138,7 +136,7 @@ async function handleJoinGame(connection, data) {
             connectedPlayers.push({
                 connection: connection,
                 color: connectedPlayers.length === 0 ? 'white' : 'black',
-                playerName: data.username // Ajoutez le nom du joueur ici
+                playerName: data.username 
             });
 
             // Après l'ajout d'un joueur à connectedPlayers
