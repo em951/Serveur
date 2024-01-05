@@ -63,16 +63,18 @@ wsServer.on('request', function(request) {
 // Fonctions spécifiques
 
 function isPlayerInGame(connection) {
-   
+       //TO DO
+
     return false; 
 }
 
 function endGame(connection) {
-   
+       //TO DO
 }
 
 function informOtherPlayers(connection) {
-    // Cela pourrait impliquer l'envoi d'un message aux autres joueurs pour les informer de la déconnexion
+    //TO DO
+    // Envoi d'un message aux autres joueurs pour les informer de la déconnexion
 }
 
 
@@ -213,17 +215,21 @@ async function handleJoinGame(connection, data) {
 
 
 function handleGameState(connection, data) {
+    //TO DO
     // Logique pour gérer l'état du jeu
+    
 }
 
 
 function handlePlayerMove(connection, data) {
+     //TO DO
     // Logique pour gérer les mouvements des joueurs
 }
 
 
 
 function handleGetScores(connection, data) {
+    //TO DO
     // Logique pour récupérer les scores
 }
 
