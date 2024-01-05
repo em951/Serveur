@@ -1,0 +1,15 @@
+{
+  "name": "ServeurProjetDames",
+  "version": "1.0.0",
+  "description": "\"Un serveur WebSocket pour un jeu de Dames.\"",
+  "main": "ServerWS.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Houmadi Roihmatoun",
+  "license": "ISC",
+  "dependencies": {
+    "mongodb": "^6.3.0",
+    "websocket": "^1.0.34"
+  }
+}
