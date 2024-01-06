@@ -16,9 +16,9 @@ async function authenticatePlayer(username, password) {
 
     const db = client.db(dbName);
 
-    // Vérifier l'existence du joueur dans la collection "players"
+    // Vérifier l'existence du joueur dans la collection "Joueur"
     const playersCollection = db.collection('Joueur');
-    const player = await playersCollection.findOne({ pseudo: username, motDePasse: password });
+    const player = await playersCollection.findOne({ pseudo: username, mdp: password });
 
     return player; // Renvoie le joueur trouvé ou null s'il n'existe pas
   } catch (err) {
@@ -47,9 +47,14 @@ async function registerPlayer(username, password) {
       throw new Error('Ce pseudo est déjà utilisé. Veuillez en choisir un autre.');
     }
 
-    // Ajouter le nouveau joueur à la collection "players"
-    const result = await playersCollection.insertOne({ pseudo: username, motDePasse: password });
-
+    // Ajouter le nouveau joueur à la collection "Joueur"
+    const result = await playersCollection.insertOne({
+      pseudo: username,
+      mdp: password,
+      partiesJouees: 0, 
+      partiesGagnees: 0
+    });
+    
     console.log('Joueur enregistré, ID :', result.insertedId);
   } catch (err) {
     console.error('Erreur lors de l\'enregistrement du joueur :', err);
@@ -82,27 +87,30 @@ async function displayPlayerList() {
 }
 
 
-// Fonction pour supprimer un joueur
-async function deletePlayer(username) {
-    const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
+async function getPlayerByUsername(username) {
+  const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
-    try {
-        await client.connect();
-        console.log('Connecté à MongoDB');
+  try {
+      await client.connect();
+      console.log('Connecté à MongoDB');
 
-        const db = client.db(dbName);
+      console.log('Nom d\'utilisateur recherché :', username);
 
-        const playersCollection = db.collection('Joueur');
-        const result = await playersCollection.deleteOne({ pseudo: username });
+      const db = client.db(dbName);
+      const playersCollection = db.collection('Joueur');
 
-        console.log(`Joueur "${username}" supprimé. Nombre de documents supprimés : ${result.deletedCount}`);
-    } catch (err) {
-        console.error('Erreur lors de la suppression du joueur :', err);
-        throw err;
-    } finally {
-        await client.close();
-    }
+      // Récupérer le joueur par son nom d'utilisateur
+      const player = await playersCollection.findOne({ pseudo: username });
+
+      return player;  
+  } catch (err) {
+      console.error('Erreur lors de la récupération du joueur par nom d\'utilisateur :', err);
+      throw err;
+  } finally {
+      await client.close();
+  }
 }
+
 
 
 /**
@@ -115,32 +123,32 @@ async function createGame(player1, player2) {
   const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
   try {
-      await client.connect();
-      console.log('Connecté à MongoDB');
+    await client.connect();
+    console.log('Connecté à MongoDB');
 
-      const db = client.db(dbName);
+    const db = client.db(dbName);
 
-      // Utilisez la collection 'Partie' pour stocker les informations sur la partie
-      const gamesCollection = db.collection('Partie');
+    // Utilisez la collection 'Partie' pour stocker les informations sur la partie
+    const gamesCollection = db.collection('Partie');
 
-      // Insérez une nouvelle partie avec des informations initiales
-      const result = await gamesCollection.insertOne({
-          id_joueur_1: player1.connection.remoteAddress, // Utilisez une propriété appropriée pour identifier le joueur 1
-          id_joueur_2: player2.connection.remoteAddress, // Utilisez une propriété appropriée pour identifier le joueur 2
-          heureDebut: new Date(),
-          heureFin: null, // Initialisé à null car la partie n'est pas encore terminée
-          date: new Date(),
-          vainqueur: null // Initialisé à null car la partie n'a pas encore de vainqueur
-      });
+    // Insérez une nouvelle partie avec des informations initiales
+    const result = await gamesCollection.insertOne({
+      id_joueur_1: player1.playerName,
+      id_joueur_2: player2.playerName,
+      heureDebut: new Date(),
+      heureFin: null, // Initialisé à null car la partie n'est pas encore terminée
+      date: new Date(),
+      vainqueur: null // Initialisé à null car la partie n'a pas encore de vainqueur
+    });
 
-      console.log('Partie créée, ID :', result.insertedId);
+    console.log('Partie créée, ID :', result.insertedId);
 
-      return result.insertedId; // Retourne l'identifiant de la partie créée
+    return result.insertedId; // Retourne l'identifiant de la partie créée
   } catch (err) {
-      console.error('Erreur lors de la création de la partie :', err);
-      throw err;
+    console.error('Erreur lors de la création de la partie :', err);
+    throw err;
   } finally {
-      await client.close();
+    await client.close();
   }
 }
 
@@ -148,6 +156,6 @@ module.exports = {
   authenticatePlayer,
   registerPlayer,
   displayPlayerList,
-  deletePlayer,
-  createGame, 
+  createGame,
+  getPlayerByUsername,
 };

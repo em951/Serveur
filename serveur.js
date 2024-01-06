@@ -136,13 +136,15 @@ async function handleJoinGame(connection, data) {
             connectedPlayers.push({
                 connection: connection,
                 color: connectedPlayers.length === 0 ? 'white' : 'black',
-                playerName: data.username 
+                playerName: data.username
             });
 
             // Après l'ajout d'un joueur à connectedPlayers
             console.log('Joueur ajouté :', connectedPlayers);
 
             if (connectedPlayers.length === 2) {
+                console.log('Noms des joueurs :', connectedPlayers.map(player => player.playerName));
+
                 const gameId = await database.createGame(connectedPlayers[0], connectedPlayers[1]);
 
                 const joinGameResponse = {
@@ -166,15 +168,13 @@ async function handleJoinGame(connection, data) {
                         playerName: player.playerName
                     })),
                     gameId: gameId
-                    
                 };
 
-               // Après le début de la partie
-               console.log('La partie a commencé. Joueurs :');
-               connectedPlayers.forEach(player => {
-               console.log(`Joueur ${player.color}: ${player.playerName}`);
-});
-
+                // Après le début de la partie
+                console.log('La partie a commencé. Joueurs :');
+                connectedPlayers.forEach(player => {
+                    console.log(`Joueur ${player.color}: ${player.playerName}`);
+                });
 
                 connectedPlayers.forEach(player => {
                     player.connection.send(JSON.stringify(startGameMessage));
@@ -207,7 +207,6 @@ async function handleJoinGame(connection, data) {
         };
         connection.send(JSON.stringify(joinGameResponse));
     }
-
 
 }
 
