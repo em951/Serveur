@@ -10,7 +10,7 @@ const wsServer = new WebSocketServer({
 // Mise en place des événements WebSockets
 wsServer.on('request', function(request) {
     const connection = request.accept(null, request.origin);
-//test
+
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
             const data = JSON.parse(message.utf8Data);
