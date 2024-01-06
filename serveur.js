@@ -133,13 +133,14 @@ let connectedPlayers = [];
 async function handleJoinGame(connection, data) {
     try {
         if (connectedPlayers.length < 2) {
+            const playerColor = connectedPlayers.length === 0 ? 'white' : 'black';
+
             connectedPlayers.push({
                 connection: connection,
-                color: connectedPlayers.length === 0 ? 'white' : 'black',
+                color: playerColor,
                 playerName: data.username
             });
 
-            // Après l'ajout d'un joueur à connectedPlayers
             console.log('Joueur ajouté :', connectedPlayers);
 
             if (connectedPlayers.length === 2) {
@@ -151,7 +152,7 @@ async function handleJoinGame(connection, data) {
                     type: 'join_game_response',
                     success: true,
                     content: 'Vous avez rejoint une partie.',
-                    playerColor: connectedPlayers[connectedPlayers.length - 1].color,
+                    playerColor: playerColor,
                     gameId: gameId
                 };
 
@@ -169,12 +170,6 @@ async function handleJoinGame(connection, data) {
                     })),
                     gameId: gameId
                 };
-
-                // Après le début de la partie
-                console.log('La partie a commencé. Joueurs :');
-                connectedPlayers.forEach(player => {
-                    console.log(`Joueur ${player.color}: ${player.playerName}`);
-                });
 
                 connectedPlayers.forEach(player => {
                     player.connection.send(JSON.stringify(startGameMessage));
