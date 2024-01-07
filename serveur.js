@@ -29,7 +29,7 @@ wsServer.on('request', function(request) {
                     break;
 
                 case 'leave_wait':
-                    handleLeaveGame(connection, data);
+                    handleLeaveWaitGame(connection, data);
                     break;
 
                 case 'player_move':
@@ -42,6 +42,10 @@ wsServer.on('request', function(request) {
 
                 case 'get_scores':
                     handleGetScores(connection, data);
+                    break;
+
+                case 'end_game':
+                    handleEndGame(connection, data);
                     break;
 
                 default:
@@ -70,8 +74,62 @@ function isPlayerInGame(connection) {
     return false; 
 }
 
-function endGame(connection) {
-    //TO DO
+function handleEndGame(connection, data) {
+    const game = database.endGame(data.idpartie, data.idwinner, data.idloser);
+    console.log('idwinner : ', data.idwinner);
+    console.log('idloser : ', data.idloser);
+    console.log(cplayers);
+    if (game.id_joueur_1 == data.idwinner){
+        
+        let player1 = cplayers.find((element) => element.playerName == data.idwinner);
+
+        const win = database.getPlayerByUsername(data.idwinner);
+        let endGameResponse = {
+            type: 'end_game_response',
+            success: true,
+            content: 'Vous avez gagné la partie!',
+            idwinner : data.idwinner,
+            end : 'won',
+            gameId: data.idpartie
+        };
+        player1.connection.send(JSON.stringify(endGameResponse));
+
+        let player2 = cplayers.find((element) => element.playerName == data.idloser);
+        endGameResponse = {
+        type: 'end_game_response',
+        success: true,
+        content: 'Vous avez perdu la partie...',
+        idwinner : data.idwinner,
+        end : 'loss',
+        gameId: data.idpartie
+        };
+    
+        player2.connection.send(JSON.stringify(endGameResponse));
+    } else {
+        let player1 = cplayers.find((element) => element.playerName == data.idloser);
+        let endGameResponse = {
+            type: 'end_game_response',
+            success: true,
+            content: 'Vous avez perdu la partie...',
+            idwinner : data.idwinner,
+            end : 'loss',
+            gameId: data.idpartie
+        };
+    
+        player1.connection.send(JSON.stringify(endGameResponse));
+
+        let player2 = cplayers.find((element) => element.playerName == data.idwinner);
+        endGameResponse = {
+            type: 'end_game_response',
+            success: true,
+            content: 'Vous avez gagné la partie!',
+            idwinner : data.idwinner,
+            end : 'won',
+            gameId: data.idpartie
+        };
+        player2.connection.send(JSON.stringify(endGameResponse));
+    }
+    
 }
 
 function informOtherPlayers(connection) {
@@ -91,6 +149,9 @@ function handleConnexionServer(connection) {
     connection.sendUTF(JSON.stringify(response));
 }
 
+
+// Variable pour suivre le nombre de joueurs connectés
+let cplayers = [];
 
 // Fonction pour gérer l'authentification d'un joueur
 async function handleAuthentication(connection, data) {
@@ -114,6 +175,13 @@ async function handleAuthentication(connection, data) {
             content: 'Vous êtes bien identifié.',
         };
 
+        cplayers.push({
+            connection: connection,
+            playerName: data.username, 
+            playerId : player._id//,
+            //playerStatus : 'idle'
+        });
+
         // Envoyer la réponse au client
         connection.sendUTF(JSON.stringify(response));
 
@@ -131,7 +199,7 @@ async function handleAuthentication(connection, data) {
 }
 
 
-// Variable pour suivre le nombre de joueurs connectés
+// Variable pour suivre le nombre de joueurs en file d'attente
 let connectedPlayers = [];
 
 async function handleJoinGame(connection, data) {
@@ -146,6 +214,10 @@ async function handleJoinGame(connection, data) {
             });
 
             console.log('Joueur ajouté :', connectedPlayers);
+            console.log('joeurs en ligne : ', cplayers);
+            let activePlayer = cplayers.find((element) => element.playerName == data.username);
+            console.log(activePlayer);
+            activePlayer.playerStatus = 'waiting';
 
             if (connectedPlayers.length === 2) {
                 console.log('Noms des joueurs :', connectedPlayers.map(player => player.playerName));
@@ -206,10 +278,9 @@ async function handleJoinGame(connection, data) {
         };
         connection.send(JSON.stringify(joinGameResponse));
     }
-
 }
 
-async function handleLeaveGame(connection, data) {
+async function handleLeaveWaitGame(connection, data) {
     let leaveWaitResponse;
     if (connectedPlayers.length > 0){
         if (connectedPlayers[0].playerName == data.username){

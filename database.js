@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, Timestamp } = require('mongodb');
 
 // URL de connexion
 const url = 'mongodb://127.0.0.1:27017';
@@ -135,7 +135,7 @@ async function createGame(player1, player2) {
     const result = await gamesCollection.insertOne({
       id_joueur_1: player1.playerName,
       id_joueur_2: player2.playerName,
-      heureDebut: new Date(),
+      heureDebut: new Timestamp(),
       heureFin: null, // Initialisé à null car la partie n'est pas encore terminée
       date: new Date(),
       vainqueur: null // Initialisé à null car la partie n'a pas encore de vainqueur
@@ -152,10 +152,63 @@ async function createGame(player1, player2) {
   }
 }
 
+async function endGame(idgame, idwinner, idloser){
+  const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
+  try{
+    await client.connect();
+    console.log('Connecté à MongoDB');
+
+    const db = client.db(dbName);
+    
+    // Utilisez la collection 'Partie' pour retrouver les informations sur la partie
+    const gamesCollection = db.collection('Partie');
+
+    const result = await gamesCollection.updateOne({
+      _id: idgame
+  }, {
+      $set: {
+        heureFin : new Timestamp(),
+        vainqueur : idwinner
+      }
+  });
+
+  
+  const playersCollection = db.collection('Joueur');
+
+  // Récupérer le joueur par son nom d'utilisateur
+  const playerwin = await playersCollection.updateOne({ 
+    pseudo: idwinner 
+  }, {
+    $inc: {
+      partiesGagnees: 1,
+      partiesJouees : 1
+    }
+  });
+  const playerlos = await playersCollection.updateOne({ 
+    pseudo: idloser 
+  }, {
+    $inc: {
+      partiesJouees : 1
+    }
+  });
+
+  console.log('Partie terminée, ID :', result._id);
+
+  return result; // Retourne la partie créée
+  } catch(err) {
+    console.error('Erreur lors de la MAJ de la partie :', err);
+    throw err;
+  } finally {
+    await client.close();
+  }
+
+}
+
 module.exports = {
   authenticatePlayer,
   registerPlayer,
   displayPlayerList,
   createGame,
   getPlayerByUsername,
+  endGame
 };
