@@ -28,6 +28,10 @@ wsServer.on('request', function(request) {
                     handleJoinGame(connection, data);
                     break;
 
+                case 'leave_wait':
+                    handleLeaveGame(connection, data);
+                    break;
+
                 case 'player_move':
                     handlePlayerMove(connection, data);
                     break;
@@ -203,6 +207,33 @@ async function handleJoinGame(connection, data) {
         connection.send(JSON.stringify(joinGameResponse));
     }
 
+}
+
+async function handleLeaveGame(connection, data) {
+    let leaveWaitResponse;
+    if (connectedPlayers.length > 0){
+        if (connectedPlayers[0].playerName == data.username){
+            let p = connectedPlayers.shift();
+            leaveWaitResponse = {
+                type: 'leave_wait_response',
+                success: true,
+                content: 'Joueur ' + p.playerName + ' supprimé de file attente'
+            };
+        } else {
+            leaveWaitResponse = {
+                type: 'leave_wait_response',
+                success: false,
+                content: 'Joueur non supprimé de file attente'
+            };
+        }
+    } else {
+        leaveWaitResponse = {
+            type: 'leave_wait_response',
+            success: false,
+            content: 'Joueur non supprimé de file attente'
+        };
+    }
+    connection.send(JSON.stringify(leaveWaitResponse));
 }
 
 
