@@ -219,6 +219,7 @@ async function handleLeaveGame(connection, data) {
                 success: true,
                 content: 'Joueur ' + p.playerName + ' supprimé de file attente'
             };
+            console.log('Joueur supprimé :', p.playerName);
         } else {
             leaveWaitResponse = {
                 type: 'leave_wait_response',
