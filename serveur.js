@@ -52,6 +52,10 @@ wsServer.on('request', function(request) {
                     handleClosingPage(connection, data);
                     break;
 
+                case 'get_histo':
+                    handleGetHisto(connection, data);
+                    break;
+
                 default:
                     console.log('Message non géré :', data);
             }
@@ -71,6 +75,23 @@ wsServer.on('request', function(request) {
 });
 
 // Fonctions spécifiques
+
+async function handleGetHisto(connection, data){
+    let p = database.getPlayerByUsername(data.username);
+    
+    const listparties = await database.displayHistoParties();
+    console.log('Liste des parties :', listparties);
+    const response = {
+        type: 'histo_reponse',
+        isValid: true,
+        content: 'Voici la liste des parties de l utilisateur.' + data.username,
+        username : data.username,
+        lparties : listparties
+    };
+
+    // Envoyer la réponse au client
+    connection.sendUTF(JSON.stringify(response));
+}
 
 function handleClosingPage(connection, data) {
     console.log("testest");
