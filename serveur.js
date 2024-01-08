@@ -48,6 +48,10 @@ wsServer.on('request', function(request) {
                     handleEndGame(connection, data);
                     break;
 
+                case 'closing_page':
+                    handleClosingPage(connection, data);
+                    break;
+
                 default:
                     console.log('Message non géré :', data);
             }
@@ -55,18 +59,32 @@ wsServer.on('request', function(request) {
     });
     connection.on('close', function(reasonCode, description) {
         console.log('WebSocket Connection Closed:', reasonCode, description);
-    
+        
         if (isPlayerInGame(connection)) {
 
             endGame(connection);
         }
-    
+        
         informOtherPlayers(connection);
     });
     
 });
 
 // Fonctions spécifiques
+
+function handleClosingPage(connection, data) {
+    console.log("testest");
+    let p = cplayers.find((element) => element.playerName == data.username);
+    console.log(p);
+    let index = cplayers.findIndex((element) => element.playerName == data.username);
+    console.log(index);
+    if (index !== -1) {
+        p = cplayers.splice(index, 1);
+        console.log(p.playerName, " supprimé");
+        console.log("connexion supprimée, il reste " , cplayers);
+    }
+
+}
 
 function isPlayerInGame(connection) {
        //TO DO
@@ -164,6 +182,8 @@ async function handleAuthentication(connection, data) {
             await database.registerPlayer(data.username, data.password);
         }
 
+        //rajouter test si joueur déjà connecté
+
         // Afficher la liste des joueurs après l'authentification
         const listplayers = await database.displayPlayerList();
         console.log('Liste des joueurs :', listplayers);
@@ -173,6 +193,7 @@ async function handleAuthentication(connection, data) {
             type: 'authentication_response',
             isValid: true,
             content: 'Vous êtes bien identifié.',
+            username : data.username
         };
 
         cplayers.push({
@@ -181,6 +202,7 @@ async function handleAuthentication(connection, data) {
             playerId : player._id//,
             //playerStatus : 'idle'
         });
+        console.log('joueurs en ligne : ', cplayers);
 
         // Envoyer la réponse au client
         connection.sendUTF(JSON.stringify(response));
@@ -214,7 +236,6 @@ async function handleJoinGame(connection, data) {
             });
 
             console.log('Joueur ajouté :', connectedPlayers);
-            console.log('joeurs en ligne : ', cplayers);
             let activePlayer = cplayers.find((element) => element.playerName == data.username);
             console.log(activePlayer);
             activePlayer.playerStatus = 'waiting';
