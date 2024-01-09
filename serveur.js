@@ -204,31 +204,44 @@ async function handleAuthentication(connection, data) {
         }
 
         //rajouter test si joueur déjà connecté
+        let activePlayer = cplayers.find((element) => element.playerName == data.username);
 
-        // Afficher la liste des joueurs après l'authentification
-        const listplayers = await database.displayPlayerList();
-        console.log('Liste des joueurs :', listplayers);
+        if (activePlayer != undefined ){
+            const response = {
+                type: 'authentication_response',
+                isValid: false,
+                content: 'identification refusée, joueur déjà connecté.',
+                username : data.username
+            };
+            connection.sendUTF(JSON.stringify(response));
+        } else {
+            // Afficher la liste des joueurs après l'authentification
+            const listplayers = await database.displayPlayerList();
+            console.log('Liste des joueurs :', listplayers);
 
-        // Authentification réussie, envoyer une réponse positive
-        const response = {
-            type: 'authentication_response',
-            isValid: true,
-            content: 'Vous êtes bien identifié.',
-            username : data.username
-        };
+            // Authentification réussie, envoyer une réponse positive
+            const response = {
+                type: 'authentication_response',
+                isValid: true,
+                content: 'Vous êtes bien identifié.',
+                username : data.username
+            };
 
-        cplayers.push({
-            connection: connection,
-            playerName: data.username, 
-            playerId : player._id//,
-            //playerStatus : 'idle'
-        });
-        console.log('joueurs en ligne : ', cplayers);
+            cplayers.push({
+                connection: connection,
+                playerName: data.username, 
+                playerId : player._id//,
+                //playerStatus : 'idle'
+            });
+            console.log('joueurs en ligne : ', cplayers);
 
-        // Envoyer la réponse au client
-        connection.sendUTF(JSON.stringify(response));
+            // Envoyer la réponse au client
+            connection.sendUTF(JSON.stringify(response));
 
-        console.log('Informations d\'authentification reçues:', data);
+            console.log('Informations d\'authentification reçues:', data);
+        }
+
+        
     } catch (error) {
         console.error('Erreur lors de l\'authentification du joueur :', error);
         // Gérer l'erreur et renvoyer une réponse d'authentification invalide si nécessaire

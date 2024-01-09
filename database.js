@@ -64,6 +64,7 @@ async function registerPlayer(username, password) {
   }
 }
 
+//fonction pour renvoyer l'historique des parties d'un joueur donné 
 async function displayHistoParties(username){
   const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
   try {
@@ -76,12 +77,12 @@ async function displayHistoParties(username){
     const playerList = await gamesCollection.find({ $or: [{id_joueur_1: username}, {id_joueur_2:username}]});
 
     return playerList; // Retourner la liste des joueurs
-} catch (err) {
-    console.error('Erreur lors de l\'affichage de la liste des joueurs :', err);
-    throw err;
-} finally {
-    await client.close();
-}
+  } catch (err) {
+      console.error('Erreur lors de l\'affichage de la liste des joueurs :', err);
+      throw err;
+  } finally {
+      await client.close();
+  }
 }
 
 // Fonction pour afficher la liste des joueurs
