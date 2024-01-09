@@ -231,5 +231,6 @@ module.exports = {
   displayPlayerList,
   createGame,
   getPlayerByUsername,
-  endGame
+  endGame,
+  displayHistoParties
 };
