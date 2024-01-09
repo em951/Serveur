@@ -79,7 +79,7 @@ wsServer.on('request', function(request) {
 async function handleGetHisto(connection, data){
     let p = database.getPlayerByUsername(data.username);
     
-    const listparties = await database.displayHistoParties();
+    const listparties = await database.displayHistoParties(data.username);
     console.log('Liste des parties :', listparties);
     const response = {
         type: 'histo_reponse',
