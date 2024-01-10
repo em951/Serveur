@@ -205,7 +205,7 @@ async function handleAuthentication(connection, data) {
 
         //rajouter test si joueur déjà connecté
         let activePlayer = cplayers.find((element) => element.playerName == data.username);
-
+        console.log(activePlayer);
         if (activePlayer != undefined ){
             const response = {
                 type: 'authentication_response',
