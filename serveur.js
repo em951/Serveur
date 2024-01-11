@@ -64,12 +64,12 @@ wsServer.on('request', function(request) {
     connection.on('close', function(reasonCode, description) {
         console.log('WebSocket Connection Closed:', reasonCode, description);
         
-        if (isPlayerInGame(connection)) {
+        /*if (isPlayerInGame(connection)) {
 
             endGame(connection);
         }
         
-        informOtherPlayers(connection);
+        informOtherPlayers(connection);*/
     });
     
 });
@@ -79,14 +79,15 @@ wsServer.on('request', function(request) {
 async function handleGetHisto(connection, data){
     let p = database.getPlayerByUsername(data.username);
     
-    const listparties = await database.displayHistoParties(data.username);
-    console.log('Liste des parties :', listparties);
+    //const playerList = await database.displayHistoParties(data.username);
+    const playerList = await (database.displayHistoParties(data.username));
+    console.log('Liste des parties :', playerList);
     const response = {
         type: 'histo_reponse',
         isValid: true,
         content: 'Voici la liste des parties de l utilisateur.' + data.username,
         username : data.username,
-        lparties : listparties
+        lparties : JSON.stringify(playerList)
     };
 
     // Envoyer la réponse au client
@@ -117,7 +118,7 @@ function handleEndGame(connection, data) {
     const game = database.endGame(data.idpartie, data.idwinner, data.idloser);
     console.log('idwinner : ', data.idwinner);
     console.log('idloser : ', data.idloser);
-    console.log(cplayers);
+    //console.log(cplayers);
     if (game.id_joueur_1 == data.idwinner){
         
         let player1 = cplayers.find((element) => element.playerName == data.idwinner);

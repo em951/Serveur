@@ -74,9 +74,9 @@ async function displayHistoParties(username){
     const db = client.db(dbName);
 
     const gamesCollection = db.collection('Partie');
-    const playerList = await gamesCollection.find({ $or: [{id_joueur_1: username}, {id_joueur_2:username}]});
+    const playerList = await gamesCollection.find({ $or: [{id_joueur_1: username}, {id_joueur_2:username}]}).toArray();
 
-    return playerList; // Retourner la liste des joueurs
+    return playerList; // Retourner la liste des parties
   } catch (err) {
       console.error('Erreur lors de l\'affichage de la liste des joueurs :', err);
       throw err;
@@ -184,14 +184,25 @@ async function endGame(idgame, idwinner, idloser){
     // Utilisez la collection 'Partie' pour retrouver les informations sur la partie
     const gamesCollection = db.collection('Partie');
 
-    const result = await gamesCollection.updateOne({
-      _id: idgame
-  }, {
-      $set: {
-        heureFin : new Timestamp(),
-        vainqueur : idwinner
+
+  result = await gamesCollection.updateOne({
+    $or : [
+      {
+        id_joueur_1 : idwinner,
+        id_joueur_2 : idloser,
+        vainqueur : null
+      } , {
+        id_joueur_1 : idloser,
+        id_joueur_2 : idwinner,
+        vainqueur : null
       }
-  });
+    ]
+}, {
+    $set: {
+      heureFin : new Timestamp(),
+      vainqueur : idwinner
+    }
+});
 
   
   const playersCollection = db.collection('Joueur');
