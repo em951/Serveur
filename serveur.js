@@ -251,7 +251,7 @@ async function handleAuthentication(connection, data) {
             cplayers.push({
                 connection: connection,
                 playerName: data.username, 
-                playerId : player._id//,
+                //playerId : player._id//,
                 //playerStatus : 'idle'
             });
             console.log('joueurs en ligne : ', cplayers);
