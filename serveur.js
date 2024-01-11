@@ -55,6 +55,10 @@ wsServer.on('request', function(request) {
                 case 'get_histo':
                     handleGetHisto(connection, data);
                     break;
+                
+                case 'get_high_players':
+                    handleGetHighPlayers(connection, data);
+                    break;
 
                 default:
                     console.log('Message non géré :', data);
@@ -75,6 +79,22 @@ wsServer.on('request', function(request) {
 });
 
 // Fonctions spécifiques
+
+async function handleGetHighPlayers(connection, data){
+    
+    const playerList = await (database.getPlayersByScore());
+    console.log('Liste des joueurs :', playerList);
+    const response = {
+        type: 'get_high_players_reponse',
+        isValid: true,
+        content: 'Voici les plus hauts scores du serveur',
+        username : data.username,
+        lparties : JSON.stringify(playerList)
+    };
+
+    // Envoyer la réponse au client
+    connection.sendUTF(JSON.stringify(response));
+}
 
 async function handleGetHisto(connection, data){
     let p = database.getPlayerByUsername(data.username);

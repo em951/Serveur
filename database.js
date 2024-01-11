@@ -132,6 +132,29 @@ async function getPlayerByUsername(username) {
   }
 }
 
+async function getPlayersByScore() {
+  const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
+
+  try {
+      await client.connect();
+      console.log('Connecté à MongoDB');
+
+
+      const db = client.db(dbName);
+      const playersCollection = db.collection('Joueur');
+
+      // Récupérer le joueur par plus hauts scores
+      const playerList = await playersCollection.find().sort( { "partiesGagnees": -1 } ).toArray();
+
+      return playerList;  
+  } catch (err) {
+      console.error('Erreur lors de la récupération du joueur par score :', err);
+      throw err;
+  } finally {
+      await client.close();
+  }
+}
+
 
 
 /**
@@ -243,5 +266,6 @@ module.exports = {
   createGame,
   getPlayerByUsername,
   endGame,
-  displayHistoParties
+  displayHistoParties,
+  getPlayersByScore
 };
