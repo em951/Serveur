@@ -89,7 +89,7 @@ async function handleGetHighPlayers(connection, data){
         isValid: true,
         content: 'Voici les plus hauts scores du serveur',
         username : data.username,
-        lparties : JSON.stringify(playerList)
+        ljoueurs : JSON.stringify(playerList)
     };
 
     // Envoyer la réponse au client
