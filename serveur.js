@@ -59,6 +59,10 @@ wsServer.on('request', function(request) {
                 case 'get_high_players':
                     handleGetHighPlayers(connection, data);
                     break;
+                
+                case 'get_move':
+                    handleGetMove(connection, data);
+                    break;
 
                 default:
                     console.log('Message non géré :', data);
@@ -79,6 +83,27 @@ wsServer.on('request', function(request) {
 });
 
 // Fonctions spécifiques
+
+function handleGetMove(connection, data){
+    console.log("reception mouvement");
+    
+    let player1 = cplayers.find((element) => element.playerName == data.idopponent);
+    
+    const response = {
+        type: 'get_move_reponse',
+        isValid : true,
+        username: data.idopponent,
+        idopponent : data.username,
+        idpartie : data.idpartie,
+        movingpawnId : data.movingpawnId,
+        listMoves : data.listMoves,
+        listEatenPawns : data.listEatenPawns,
+        selected : data.selected
+    };
+    console.log(response);
+    // Envoyer la réponse au client
+    player1.connection.sendUTF(JSON.stringify(response));
+}
 
 async function handleGetHighPlayers(connection, data){
     
@@ -283,7 +308,7 @@ async function handleJoinGame(connection, data) {
     try {
         if (connectedPlayers.length < 2) {
             const playerColor = connectedPlayers.length === 0 ? 'white' : 'black';
-
+            console.log(playerColor, " en file attente");
             connectedPlayers.push({
                 connection: connection,
                 color: playerColor,
